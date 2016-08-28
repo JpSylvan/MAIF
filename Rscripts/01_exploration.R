@@ -46,3 +46,33 @@ ggplot(train_tot, aes(x=annee_permis, fill=prime_tot_ttc>1200)) + geom_density(a
 
 ggplot(train_tot, aes(x=annee_permis, y=prime_tot_ttc, color=prime_tot_ttc>1200)) + geom_point(shape=1)
 
+comparaison_pop = rbind(train_tot[,list(groupe="train",codepostal)],test[,list(groupe="test",codepostal)])
+
+ggplot(comparaison_pop, aes(x=codepostal, fill=groupe)) + geom_density(alpha=.3)
+
+codes_postaux_test = as.character(test[,unique(codepostal)])
+
+a = train_tot[codepostal %in% codes_postaux_test]
+a[,codepostal:=as.character(codepostal)]
+
+train_filtre_codepostal = a
+
+b = train_tot[substr(codepostal,1,2) == "97"]
+b[,codepostal:=as.character(codepostal)]
+
+train_filtre_codepostal = b
+
+#♣ Comparaison puissance 
+comparaison_pop = rbind(train_tot[,list(groupe="train",puis_fiscale)],test[,list(groupe="test",puis_fiscale)])
+
+ggplot(comparaison_pop, aes(x=puis_fiscale, fill=groupe)) + geom_density(alpha=.3)
+
+# Comparaison prime par région
+train_tot[,region:=substr(codepostal,1,2)]
+
+comparaison_prime_pop = train_tot[,mean(prime_tot_ttc),by=region]
+setorder(comparaison_prime_pop,V1)
+comparaison_prime_pop$region = factor(comparaison_prime_pop$region, levels = comparaison_prime_pop$region[order(comparaison_prime_pop$V1)])
+
+ggplot(data=comparaison_prime_pop, aes(x=region, y=V1, fill=region)) +
+  geom_bar(colour="black", stat="identity")
